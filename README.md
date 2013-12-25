@@ -6,13 +6,17 @@ Rohm uses Om with some added helpers and a Pedestal style handling of events as 
 
 ## Example
 
+TODO
+
 ## Documentation
+
+TODO
 
 ## Using it
 
 Rohm is pre-alpha software.
 
-Follow the  Om install instructions first, then add
+Follow the Om install instructions first, then add
 
 ```clj
 (defproject foo "0.1.0-SPAPSHOT"
