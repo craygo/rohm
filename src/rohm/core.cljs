@@ -18,7 +18,10 @@
     (if-let [func (de-route type topic routes)]
       (let [new-value (func old-value mesg)]
         ;(.info js/console (pr-str "handle-mesg topic " topic new-value))
-        (swap! app-state update-in topic (fn [_ nv] nv) new-value)
+        (try
+          (swap! app-state update-in topic (fn [_ nv] nv) new-value)
+          (catch js/Object e 
+            (.warn js/console (pr-str "validator? " e))))
         )
       (.warn js/console (pr-str "handle-mesg: no routing for " type topic)))))
 
