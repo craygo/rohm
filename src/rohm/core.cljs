@@ -44,15 +44,19 @@
 (defn put-msg 
   "Puts a Pedestal style message onto the input-queue.
   The type is a keyword and the topic is resolved as the path part of the cursor."
-  [type cursor-or-topic & opts]
-  (put! input-queue (merge {:type type :topic (or (:om.core/path (meta cursor-or-topic)) cursor-or-topic)} opts)))
+  [type cursor-or-topic & [opts]]
+  (let [msg (merge {:type type :topic (if (om/cursor? cursor-or-topic) (.-path cursor-or-topic) cursor-or-topic)}
+                   (if (map? opts) opts {:opts opts}))]
+    (put! input-queue msg)))
 
 (defn extract-refs 
   "Helper to extract all the refs of the owner into a map of their keywordized names and values."
-  [owner]
-  (let [ks (keys (js->clj (.-refs owner)))
-        m (into {} (map #(vector (keyword %) (.-value (om/get-node owner %))) ks))]
-    m))
+  ([owner]
+   (let [ks (keys (js->clj (.-refs owner)))
+         m (into {} (map #(vector (keyword %) (.-value (om/get-node owner %))) ks))]
+     m))
+  ([owner ref]
+   {(keyword ref) (.-value (om/get-node owner ref))}))
 
 (defn effect-messages 
   "Pedestal style: pass effect messages produced by effect functions to the effect-queue"
