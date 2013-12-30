@@ -1,6 +1,7 @@
 (ns rohm.core)
 
-(defmacro component-o
+;; owner is no longer passed in life-cylce functions
+#_(defmacro component-o
   "Sugar over reify for quickly putting together components that
   only need to implement om.core/IRender,provides automatic owner argument."
   [& body]

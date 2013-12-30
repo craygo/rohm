@@ -50,13 +50,14 @@
     (put! input-queue msg)))
 
 (defn extract-refs 
-  "Helper to extract all the refs of the owner into a map of their keywordized names and values."
+  "Helper to extract all the refs of the owner into a map of their keywordized names and values.
+  Or extract a specific ref and return a map {:value val-of-ref}"
   ([owner]
    (let [ks (keys (js->clj (.-refs owner)))
          m (into {} (map #(vector (keyword %) (.-value (om/get-node owner %))) ks))]
      m))
   ([owner ref]
-   {(keyword ref) (.-value (om/get-node owner ref))}))
+   {:value (.-value (om/get-node owner ref))}))
 
 (defn effect-messages 
   "Pedestal style: pass effect messages produced by effect functions to the effect-queue"
