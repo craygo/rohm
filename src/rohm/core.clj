@@ -13,12 +13,12 @@
 
 (defmacro list-of 
   "Produces a list-unrolling with each element in the list-in-model onto
-  the component. Uses a default map of {:path [%] :key :id} which is
+  the component. Uses a default map of {:opts idx :key :id} which is
   merged with the optional alt-map"
   [component list-in-model & [alt-map]]
-  (let [a (gensym "a")]
-    `(into-array (map (fn [~a] (om.core/build ~component ~list-in-model 
-                        ~(merge {:path [a] :key :id} alt-map)))
-                      (range (count ~list-in-model))))))
+  (let [idx (gensym "idx")]
+    `(for [~idx (range (count ~list-in-model))]
+       (om.core/build ~component ~list-in-model 
+                        ~(merge {:opts idx :key :id} alt-map)))))
 
 ;(macroexpand-1 '(list-of comment [1 2 3] {:key :cut}))
