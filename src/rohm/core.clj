@@ -19,6 +19,21 @@
   (let [idx (gensym "idx")]
     `(for [~idx (range (count ~list-in-model))]
        (om.core/build ~component ~list-in-model 
-                        ~(merge {:opts idx :key :id} alt-map)))))
+                        ~(identity {:opts (if (:opts alt-map) (merge {:index idx} (:opts alt-map)) idx)
+                                    :key (or (:key alt-map) :id)})))))
+
+(defmacro map-of 
+  "Produces a map-unrolling with each element in the map-in-model onto
+  the component. Uses a default map of {:opts idx :key :id} which is
+  merged with the optional alt-map"
+  [component map-in-model & [alt-map]]
+  (let [idx (gensym "idx")]
+    `(for [~idx (keys ~map-in-model)]
+       (om.core/build ~component ~map-in-model 
+                        ~(identity {:opts (if (:opts alt-map) (merge {:index idx} (:opts alt-map)) idx)
+                                    :key (or (:key alt-map) :id)})))))
+
 
 ;(macroexpand-1 '(list-of comment [1 2 3] {:key :cut}))
+;(macroexpand-1 '(list-of comment [1 2 3] ))
+;(macroexpand-1 '(list-of comment [1 2 3] {:opts {:current "foo"}}))

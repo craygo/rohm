@@ -17,7 +17,6 @@
   (let [old-value (if topic (get-in @app-state topic))]
     (if-let [func (de-route type topic routes)]
       (let [new-value (func old-value mesg)]
-        ;(.info js/console (pr-str "handle-mesg topic " topic new-value))
         (try
           (swap! app-state update-in topic (fn [_ nv] nv) new-value)
           (catch js/Object e 
@@ -26,8 +25,7 @@
       (.warn js/console (pr-str "handle-mesg: no routing for " type topic)))))
 
 (defn- handle-effect-mesg [{:keys [type topic] :as mesg} service]
-  (service mesg input-queue)
-  )
+  (service mesg input-queue))
 
 (defn handle-messages 
   "Call this in your app's will-mount function with your global state (atom) and routes table (Pedestal
@@ -44,10 +42,15 @@
 (defn put-msg 
   "Puts a Pedestal style message onto the input-queue.
   The type is a keyword and the topic is resolved as the path part of the cursor."
-  [type cursor-or-topic & [opts]]
-  (let [msg (merge {:type type :topic (if (om/cursor? cursor-or-topic) (.-path cursor-or-topic) cursor-or-topic)}
-                   (if (map? opts) opts {:opts opts}))]
-    (put! input-queue msg)))
+  ([type cursor-or-topic & [opts]]
+   (let [msg (merge {:type type :topic (if (om/cursor? cursor-or-topic) (.-path cursor-or-topic) cursor-or-topic)}
+                    (if (map? opts) opts {:value opts}))]
+     (put-msg msg)))
+  ([msg]
+   (if (sequential? msg)
+     (doseq [m msg]
+       (put-msg m))
+     (put! input-queue msg))))
 
 (defn extract-refs 
   "Helper to extract all the refs of the owner into a map of their keywordized names and values.
@@ -63,4 +66,5 @@
   "Pedestal style: pass effect messages produced by effect functions to the effect-queue"
   [messages]
   (doseq [mesg messages]
-    (put! effect-queue mesg)))
+    (let [mesg (if (om/cursor? (:topic mesg)) (assoc mesg :topic (.-path (:topic mesg))) mesg)]
+      (put! effect-queue mesg))))
